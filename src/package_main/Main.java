@@ -1,4 +1,5 @@
 package package_main;
+
 import javax.swing.JFrame;
 
 public class Main {
@@ -10,6 +11,10 @@ public class Main {
 		bildschirm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		bildschirm.setResizable(false);
 		bildschirm.setSize(800,600);
+		
+		Gamepanel gamepanel = new Gamepanel();
+		bildschirm.add(gamepanel);
+		
 		bildschirm.setLocationRelativeTo(null);
 		bildschirm.setVisible(true);
 		bildschirm.setIconImage(new javax.swing.ImageIcon("ima/Testicon.png").getImage());
