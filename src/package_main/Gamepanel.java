@@ -20,11 +20,14 @@ public class Gamepanel extends JPanel{
 	int playerx = 100;
 	int playery = 100;
 	int figurSpeed = 4;
+	Steuerung steuerung = new Steuerung();
 	
 	public Gamepanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
 		this.setDoubleBuffered(true);
+		this.addKeyListener(steuerung);
+		this.setFocusable(true);
 	}
 	
 	@Override
