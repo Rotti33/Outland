@@ -6,7 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Graphics;
 
-public class Gamepanel extends JPanel{
+public class Gamepanel extends JPanel implements Runnable{
 	
 	final int originalTileSize = 16;
 	final int scale = 3;
@@ -21,6 +21,7 @@ public class Gamepanel extends JPanel{
 	int playery = 100;
 	int figurSpeed = 4;
 	Steuerung steuerung = new Steuerung();
+	Thread gameThread;
 	
 	public Gamepanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -28,6 +29,53 @@ public class Gamepanel extends JPanel{
 		this.setDoubleBuffered(true);
 		this.addKeyListener(steuerung);
 		this.setFocusable(true);
+		
+		gameThread = new Thread(this);
+		gameThread.start();
+	}
+	
+	@Override
+	public void run() {
+		double drawInterval = 1000000000 / 60;
+		double nextDrawTime = System.nanoTime() + drawInterval;
+		
+		while (gameThread != null) {
+			update();
+			repaint();
+			
+			try {
+				double remainingTime = nextDrawTime - System.nanoTime();
+				remainingTime = remainingTime / 1000000;
+				
+				if(remainingTime < 0) {
+					remainingTime = 0;
+				}
+
+			Thread.sleep((long)remainingTime);
+			nextDrawTime += drawInterval;
+			}
+		catch(InterruptedException e) {
+			e.printStackTrace();
+			}
+		}
+	}
+	
+	public void update() {
+		if(steuerung.oben == true) {
+			playery = playery - figurSpeed;
+		}
+		
+		if(steuerung.unten == true) {
+			playery = playery + figurSpeed;
+		}
+		
+		if(steuerung.links == true) {
+			playerx = playerx - figurSpeed;
+		}
+		
+		if(steuerung.rechts == true) {
+			playerx = playerx + figurSpeed;
+		}
 	}
 	
 	@Override
