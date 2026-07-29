@@ -23,6 +23,10 @@ public class Gamepanel extends JPanel implements Runnable{
 	Steuerung steuerung = new Steuerung();
 	Thread gameThread;
 	
+	int fps = 0;
+	int fpsCounter = 0;
+	long timer = 0;
+	
 	public Gamepanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
@@ -57,24 +61,51 @@ public class Gamepanel extends JPanel implements Runnable{
 		catch(InterruptedException e) {
 			e.printStackTrace();
 			}
+			
+			fpsCounter++;
+			
+			timer += drawInterval;
+			
+			if(timer > 1000000000) {
+				fps = fpsCounter;
+				fpsCounter = 0;
+				timer = 0;
+			}
 		}
 	}
 	
 	public void update() {
-		if(steuerung.oben == true) {
+		
+		if (steuerung.oben == true) {
 			playery = playery - figurSpeed;
+			
+			if (playery < 0) {
+				playery = 0;
+			}
 		}
 		
-		if(steuerung.unten == true) {
+		if (steuerung.unten == true) {
 			playery = playery + figurSpeed;
+			
+			if (playery > screenHeight - tileSize) {
+				playery = screenHeight - tileSize;
+			}
 		}
-		
-		if(steuerung.links == true) {
+
+		if (steuerung.links == true) {
 			playerx = playerx - figurSpeed;
+			
+			if (playerx < 0) {
+				playerx = 0;
+			}
 		}
 		
-		if(steuerung.rechts == true) {
+		if (steuerung.rechts == true) {
 			playerx = playerx + figurSpeed;
+			
+			if (playerx > screenWidth - tileSize) {
+				playerx = screenWidth - tileSize;
+			}
 		}
 	}
 	
@@ -85,8 +116,22 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		Graphics2D g2 = (Graphics2D)g;
 		
+		g2.setColor(Color.DARK_GRAY);
+		
+		for (int x = 0; x < screenWidth; x = x + tileSize) {
+			g2.drawLine(x, 0, x, screenHeight);
+		}
+		
+		for (int y = 0; y < screenHeight; y = y + tileSize) {
+			g2.drawLine(0, y, screenWidth, y);
+		}
+		
 		g2.setColor(Color.WHITE);
 		g2.fillRect(playerx, playery, tileSize, tileSize);
+		
+		g2.setColor(Color.YELLOW);
+		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+		g2.drawString("FPS: " + fps, 700, 20);
 		
 		g2.dispose();
 	}

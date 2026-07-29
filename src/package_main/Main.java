@@ -10,10 +10,10 @@ public class Main {
 		bildschirm.setTitle("Outland");
 		bildschirm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		bildschirm.setResizable(false);
-		bildschirm.setSize(800,600);
 		
 		Gamepanel gamepanel = new Gamepanel();
 		bildschirm.add(gamepanel);
+		bildschirm.pack();
 		
 		bildschirm.setLocationRelativeTo(null);
 		bildschirm.setVisible(true);
