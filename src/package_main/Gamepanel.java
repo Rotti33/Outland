@@ -1,6 +1,8 @@
 package package_main;
 
 import javax.swing.JPanel;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -20,6 +22,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	int playerx = 100;
 	int playery = 100;
 	int figurSpeed = 4;
+	BufferedImage playerImage;
 	Steuerung steuerung = new Steuerung();
 	Thread gameThread;
 	
@@ -28,6 +31,13 @@ public class Gamepanel extends JPanel implements Runnable{
 	long timer = 0;
 	
 	public Gamepanel() {
+		
+		try {
+			playerImage = ImageIO.read(getClass().getResourceAsStream("/player.png"));
+		} catch (Exception e) {
+			e.printStackTrace(); 
+		}
+		
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
 		this.setDoubleBuffered(true);
@@ -127,7 +137,9 @@ public class Gamepanel extends JPanel implements Runnable{
 		}
 		
 		g2.setColor(Color.WHITE);
-		g2.fillRect(playerx, playery, tileSize, tileSize);
+		if (playerImage != null) {
+			g2.drawImage(playerImage, playerx, playery, tileSize, tileSize, null);
+		}
 		
 		g2.setColor(Color.YELLOW);
 		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
