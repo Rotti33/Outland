@@ -22,6 +22,9 @@ public class Gamepanel extends JPanel implements Runnable{
 	int playerx = 100;
 	int playery = 100;
 	int figurSpeed = 4;
+	
+	int[][] worldBuilding = new int[maxScreenCol][maxScreenRow];
+	
 	BufferedImage playerImage;
 	Steuerung steuerung = new Steuerung();
 	Thread gameThread;
@@ -29,6 +32,8 @@ public class Gamepanel extends JPanel implements Runnable{
 	int fps = 0;
 	int fpsCounter = 0;
 	long timer = 0;
+	
+	boolean kannUmgraben = true;
 	
 	public Gamepanel() {
 		
@@ -82,13 +87,19 @@ public class Gamepanel extends JPanel implements Runnable{
 				timer = 0;
 			}
 		}
+
+		for (int col = 0; col < maxScreenCol; col++) {
+			for (int row = 0; row < maxScreenRow; row++) {
+				worldBuilding[col][row] = 0;
+			}
+		}		
+
 	}
 	
 	public void update() {
 		
 		if (steuerung.oben == true) {
 			playery = playery - figurSpeed;
-			
 			if (playery < 0) {
 				playery = 0;
 			}
@@ -96,7 +107,6 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		if (steuerung.unten == true) {
 			playery = playery + figurSpeed;
-			
 			if (playery > screenHeight - tileSize) {
 				playery = screenHeight - tileSize;
 			}
@@ -104,7 +114,6 @@ public class Gamepanel extends JPanel implements Runnable{
 
 		if (steuerung.links == true) {
 			playerx = playerx - figurSpeed;
-			
 			if (playerx < 0) {
 				playerx = 0;
 			}
@@ -112,11 +121,34 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		if (steuerung.rechts == true) {
 			playerx = playerx + figurSpeed;
-			
 			if (playerx > screenWidth - tileSize) {
 				playerx = screenWidth - tileSize;
 			}
 		}
+		
+		if (steuerung.interaktion == true) {
+			
+			if (kannUmgraben == true) {
+				
+				int spielerMitteX = playerx + (tileSize / 2);
+				int spielerMitteY = playery + (tileSize / 2);
+				
+				int aktuelleSpalte = spielerMitteX / tileSize;
+				int aktuelleZeile = spielerMitteY / tileSize;
+				
+				if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
+					if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
+						worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
+					}
+				}
+				
+				kannUmgraben = false;
+			}
+			
+		} else {
+			kannUmgraben = true;
+		}
+		
 	}
 	
 	@Override
@@ -125,6 +157,23 @@ public class Gamepanel extends JPanel implements Runnable{
 		super.paintComponent(g);
 		
 		Graphics2D g2 = (Graphics2D)g;
+		
+		for (int col = 0; col < maxScreenCol; col++) {
+			for (int row = 0; row < maxScreenRow; row++) {
+				
+				int x = col * tileSize;
+				int y = row * tileSize;
+				
+				if (worldBuilding[col][row] == 0) {
+					g2.setColor(new Color(34, 139, 34));
+				}
+				else if (worldBuilding[col][row] == 1) {
+					g2.setColor(new Color(139, 69, 19));
+				}
+				
+				g2.fillRect(x, y, tileSize, tileSize);
+			}
+		}
 		
 		g2.setColor(Color.DARK_GRAY);
 		
