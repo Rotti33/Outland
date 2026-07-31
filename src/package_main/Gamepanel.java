@@ -23,6 +23,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	int playery = 100;
 	int figurSpeed = 4;
 	
+	String blickRichtung = "unten";	
 	int[][] worldBuilding = new int[maxScreenCol][maxScreenRow];
 	
 	BufferedImage playerImage;
@@ -100,6 +101,7 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		if (steuerung.oben == true) {
 			playery = playery - figurSpeed;
+			blickRichtung = "oben";
 			if (playery < 0) {
 				playery = 0;
 			}
@@ -107,6 +109,7 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		if (steuerung.unten == true) {
 			playery = playery + figurSpeed;
+			blickRichtung = "unten";
 			if (playery > screenHeight - tileSize) {
 				playery = screenHeight - tileSize;
 			}
@@ -114,6 +117,7 @@ public class Gamepanel extends JPanel implements Runnable{
 
 		if (steuerung.links == true) {
 			playerx = playerx - figurSpeed;
+			blickRichtung = "links";
 			if (playerx < 0) {
 				playerx = 0;
 			}
@@ -121,20 +125,36 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 		if (steuerung.rechts == true) {
 			playerx = playerx + figurSpeed;
+			blickRichtung = "rechts";
 			if (playerx > screenWidth - tileSize) {
 				playerx = screenWidth - tileSize;
 			}
 		}
 		
-		if (steuerung.interaktion == true) {
-			
+		if (steuerung.interaktion == true) {			
 			if (kannUmgraben == true) {
 				
-				int spielerMitteX = playerx + (tileSize / 2);
-				int spielerMitteY = playery + (tileSize / 2);
+				int zielX = playerx + (tileSize / 2);
+				int zielY = playery + (tileSize / 2);
 				
-				int aktuelleSpalte = spielerMitteX / tileSize;
-				int aktuelleZeile = spielerMitteY / tileSize;
+				if(blickRichtung.equals("oben")) {
+					zielY = zielY - tileSize;					
+				}
+				
+				else if(blickRichtung.equals("unten")) {
+					zielY = zielY + tileSize;					
+				}
+				
+				else if(blickRichtung.equals("links")) {
+					zielX = zielX - tileSize;					
+				}
+				
+				else if(blickRichtung.equals("rechts")) {
+					zielX = zielX + tileSize;					
+				}
+				
+				int aktuelleSpalte = zielX / tileSize;
+				int aktuelleZeile = zielY / tileSize;
 				
 				if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
 					if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
@@ -188,6 +208,31 @@ public class Gamepanel extends JPanel implements Runnable{
 		g2.setColor(Color.WHITE);
 		if (playerImage != null) {
 			g2.drawImage(playerImage, playerx, playery, tileSize, tileSize, null);
+		}
+		
+		int selectorX = playerx + (tileSize / 2);
+		int selectorY = playery + (tileSize / 2);
+		
+		if (blickRichtung.equals("oben")) {
+			selectorY = selectorY - tileSize;
+		}
+		else if (blickRichtung.equals("unten")) {
+			selectorY = selectorY + tileSize;
+		}
+		else if (blickRichtung.equals("links")) {
+			selectorX = selectorX - tileSize;
+		}
+		else if (blickRichtung.equals("rechts")) {
+			selectorX = selectorX + tileSize;
+		}
+		
+		int selectorCol = selectorX / tileSize;
+		int selectorRow = selectorY / tileSize;
+		
+		if (selectorCol >= 0 && selectorCol < maxScreenCol && selectorRow >= 0 && selectorRow < maxScreenRow) {
+			
+			g2.setColor(Color.CYAN);
+			g2.drawRect(selectorCol * tileSize, selectorRow * tileSize, tileSize, tileSize);
 		}
 		
 		g2.setColor(Color.YELLOW);
