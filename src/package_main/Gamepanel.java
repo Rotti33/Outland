@@ -36,7 +36,11 @@ public class Gamepanel extends JPanel implements Runnable{
 	
 	boolean kannUmgraben = true;
 	
+	Tile[] kachelTypen = new Tile[10];
+	
 	public Gamepanel() {
+		
+		ladeKachelBilder();
 		
 		try {
 			playerImage = ImageIO.read(getClass().getResourceAsStream("/player.png"));
@@ -171,6 +175,19 @@ public class Gamepanel extends JPanel implements Runnable{
 		
 	}
 	
+	public void ladeKachelBilder() {
+		try {
+			kachelTypen[0] = new Tile();
+			kachelTypen[0].image = ImageIO.read(getClass().getResourceAsStream("/gras.Test.png"));
+			
+			kachelTypen[1] = new Tile();
+			kachelTypen[1].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {
 		
@@ -184,14 +201,11 @@ public class Gamepanel extends JPanel implements Runnable{
 				int x = col * tileSize;
 				int y = row * tileSize;
 				
-				if (worldBuilding[col][row] == 0) {
-					g2.setColor(new Color(34, 139, 34));
-				}
-				else if (worldBuilding[col][row] == 1) {
-					g2.setColor(new Color(139, 69, 19));
-				}
+				int kachelNummer = worldBuilding[col][row];
 				
-				g2.fillRect(x, y, tileSize, tileSize);
+				if (kachelTypen[kachelNummer] != null && kachelTypen[kachelNummer].image != null) {
+					g2.drawImage(kachelTypen[kachelNummer].image, x, y, tileSize, tileSize, null);
+				}
 			}
 		}
 		
