@@ -24,6 +24,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	int figurSpeed = 4;
 	
 	String blickRichtung = "unten";	
+	
 	int[][] worldBuilding = new int[maxScreenCol][maxScreenRow];
 	
 	BufferedImage playerImage;
@@ -37,6 +38,8 @@ public class Gamepanel extends JPanel implements Runnable{
 	boolean kannUmgraben = true;
 	
 	Tile[] kachelTypen = new Tile[10];
+	
+	int samenAnzahl = 5;
 	
 	public Gamepanel() {
 		
@@ -161,8 +164,14 @@ public class Gamepanel extends JPanel implements Runnable{
 				int aktuelleZeile = zielY / tileSize;
 				
 				if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
+					
 					if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
 						worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
+					}
+					
+					else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 1 && samenAnzahl > 0) {
+						worldBuilding[aktuelleSpalte][aktuelleZeile] = 2;
+						samenAnzahl = samenAnzahl - 1;
 					}
 				}
 				
@@ -182,6 +191,9 @@ public class Gamepanel extends JPanel implements Runnable{
 			
 			kachelTypen[1] = new Tile();
 			kachelTypen[1].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
+			
+			kachelTypen[2] = new Tile();
+			kachelTypen[2].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -205,6 +217,11 @@ public class Gamepanel extends JPanel implements Runnable{
 				
 				if (kachelTypen[kachelNummer] != null && kachelTypen[kachelNummer].image != null) {
 					g2.drawImage(kachelTypen[kachelNummer].image, x, y, tileSize, tileSize, null);
+				}
+				
+				if (kachelNummer == 2) {
+					g2.setColor(Color.YELLOW);
+					g2.fillOval(x + 18, y + 18, 12, 12); 
 				}
 			}
 		}
@@ -252,6 +269,10 @@ public class Gamepanel extends JPanel implements Runnable{
 		g2.setColor(Color.YELLOW);
 		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
 		g2.drawString("FPS: " + fps, 700, 20);
+		
+		g2.setColor(Color.ORANGE);
+		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+		g2.drawString("Samen im Rucksack: " + samenAnzahl, 20, 410);
 		
 		g2.dispose();
 	}
