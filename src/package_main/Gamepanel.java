@@ -26,6 +26,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	String blickRichtung = "unten";	
 	
 	int[][] worldBuilding = new int[maxScreenCol][maxScreenRow];
+	int[][] wachstumsTimer = new int[maxScreenCol][maxScreenRow];
 	
 	BufferedImage playerImage;
 	Steuerung steuerung = new Steuerung();
@@ -182,6 +183,21 @@ public class Gamepanel extends JPanel implements Runnable{
 			kannUmgraben = true;
 		}
 		
+		for (int col = 0; col < maxScreenCol; col++) {
+			for (int row = 0; row < maxScreenRow; row++) {
+				
+				if (worldBuilding[col][row] == 2) {
+					
+					wachstumsTimer[col][row]++;
+					
+					// 60 Runden = 1 Sekunde. 300 Runden = 5 Sekunden!
+					if (wachstumsTimer[col][row] >= 300) {
+						worldBuilding[col][row] = 3;
+						wachstumsTimer[col][row] = 0;
+					}
+				}
+			}
+		}
 	}
 	
 	public void ladeKachelBilder() {
@@ -194,6 +210,9 @@ public class Gamepanel extends JPanel implements Runnable{
 			
 			kachelTypen[2] = new Tile();
 			kachelTypen[2].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
+			
+			kachelTypen[3] = new Tile();
+			kachelTypen[3].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -222,6 +241,11 @@ public class Gamepanel extends JPanel implements Runnable{
 				if (kachelNummer == 2) {
 					g2.setColor(Color.YELLOW);
 					g2.fillOval(x + 18, y + 18, 12, 12); 
+				}
+				
+				if (kachelNummer == 3) {
+					g2.setColor(Color.GREEN);
+					g2.fillRect(x + 14, y + 10, 20, 28); 
 				}
 			}
 		}
