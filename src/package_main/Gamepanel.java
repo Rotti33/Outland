@@ -41,6 +41,8 @@ public class Gamepanel extends JPanel implements Runnable{
 	Tile[] kachelTypen = new Tile[10];
 	
 	int samenAnzahl = 5;
+	int tomaten = 0;
+	int gold = 0;
 	
 	public Gamepanel() {
 		
@@ -142,37 +144,39 @@ public class Gamepanel extends JPanel implements Runnable{
 		if (steuerung.interaktion == true) {			
 			if (kannUmgraben == true) {
 				
-				int zielX = playerx + (tileSize / 2);
-				int zielY = playery + (tileSize / 2);
+				int spielerSpalte = (playerx + (tileSize / 2)) / tileSize;
+				int spielerZeile = (playery + (tileSize / 2)) / tileSize;
 				
-				if(blickRichtung.equals("oben")) {
-					zielY = zielY - tileSize;					
-				}
-				
-				else if(blickRichtung.equals("unten")) {
-					zielY = zielY + tileSize;					
-				}
-				
-				else if(blickRichtung.equals("links")) {
-					zielX = zielX - tileSize;					
-				}
-				
-				else if(blickRichtung.equals("rechts")) {
-					zielX = zielX + tileSize;					
-				}
-				
-				int aktuelleSpalte = zielX / tileSize;
-				int aktuelleZeile = zielY / tileSize;
-				
-				if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
-					
-					if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
-						worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
+				if (spielerSpalte == 15 && spielerZeile == 0) {
+					if (tomaten > 0) {
+						gold = gold + (tomaten * 10);
+						tomaten = 0;
 					}
+				} 
+				else {
+					int zielX = playerx + (tileSize / 2);
+					int zielY = playery + (tileSize / 2);
 					
-					else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 1 && samenAnzahl > 0) {
-						worldBuilding[aktuelleSpalte][aktuelleZeile] = 2;
-						samenAnzahl = samenAnzahl - 1;
+					if(blickRichtung.equals("oben")) { zielY = zielY - tileSize; }
+					else if(blickRichtung.equals("unten")) { zielY = zielY + tileSize; }
+					else if(blickRichtung.equals("links")) { zielX = zielX - tileSize; }
+					else if(blickRichtung.equals("rechts")) { zielX = zielX + tileSize; }
+					
+					int aktuelleSpalte = zielX / tileSize;
+					int aktuelleZeile = zielY / tileSize;
+					
+					if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
+						if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
+							worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
+						}
+						else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 1 && samenAnzahl > 0) {
+							worldBuilding[aktuelleSpalte][aktuelleZeile] = 2;
+							samenAnzahl = samenAnzahl - 1;
+						}
+						else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 3) {
+							worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
+							tomaten = tomaten + 1;
+						}
 					}
 				}
 				
@@ -247,6 +251,15 @@ public class Gamepanel extends JPanel implements Runnable{
 					g2.setColor(Color.GREEN);
 					g2.fillRect(x + 14, y + 10, 20, 28); 
 				}
+				
+				if (col == 15 && row == 0) {
+					g2.setColor(Color.BLUE);
+					g2.fillRect(x, y, tileSize, tileSize);
+					
+					g2.setColor(Color.WHITE);
+					g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 10));
+					g2.drawString("MARKT", x + 6, y + 26);
+				}
 			}
 		}
 		
@@ -297,6 +310,14 @@ public class Gamepanel extends JPanel implements Runnable{
 		g2.setColor(Color.ORANGE);
 		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
 		g2.drawString("Samen im Rucksack: " + samenAnzahl, 20, 410);
+		
+		g2.setColor(Color.RED);
+		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+		g2.drawString("Geerntete Tomaten: " + tomaten, 20, 385);
+		
+		g2.setColor(Color.YELLOW);
+		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+		g2.drawString("Gold: " + gold + "g", 20, 360);
 		
 		g2.dispose();
 	}
