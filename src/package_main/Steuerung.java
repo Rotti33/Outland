@@ -4,7 +4,7 @@ import java.awt.event.KeyListener;
 
 public class Steuerung implements KeyListener {
 	
-	public boolean oben, unten, links, rechts, interaktion;
+	public boolean oben, unten, links, rechts, interaktion, shop;
 	
 	@Override
 	public void keyTyped(KeyEvent e) {
@@ -20,6 +20,7 @@ public class Steuerung implements KeyListener {
 		if (code == KeyEvent.VK_A) {links = true;}
 		if (code == KeyEvent.VK_D) {rechts = true;}
 		if (code == KeyEvent.VK_E) {interaktion = true;}
+		if (code == KeyEvent.VK_Q) {shop = true;}
 	}
 	
 	@Override
@@ -31,5 +32,6 @@ public class Steuerung implements KeyListener {
 		if (code == KeyEvent.VK_A) {links = false;}
 		if (code == KeyEvent.VK_D) {rechts = false;}
 		if (code == KeyEvent.VK_E) {interaktion = false;}
+		if (code == KeyEvent.VK_Q) {shop = false;}
 	}
 }

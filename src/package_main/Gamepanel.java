@@ -1,12 +1,16 @@
 package package_main;
 
-import javax.swing.JPanel;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+
 
 public class Gamepanel extends JPanel implements Runnable{
 	
@@ -37,6 +41,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	long timer = 0;
 	
 	boolean kannUmgraben = true;
+	boolean kannEinkaufen = true;
 	
 	Tile[] kachelTypen = new Tile[10];
 	
@@ -47,6 +52,7 @@ public class Gamepanel extends JPanel implements Runnable{
 	public Gamepanel() {
 		
 		ladeKachelBilder();
+		ladeKarte();
 		
 		try {
 			playerImage = ImageIO.read(getClass().getResourceAsStream("/player.png"));
@@ -97,14 +103,7 @@ public class Gamepanel extends JPanel implements Runnable{
 				fpsCounter = 0;
 				timer = 0;
 			}
-		}
-
-		for (int col = 0; col < maxScreenCol; col++) {
-			for (int row = 0; row < maxScreenRow; row++) {
-				worldBuilding[col][row] = 0;
-			}
 		}		
-
 	}
 	
 	public void update() {
@@ -182,9 +181,26 @@ public class Gamepanel extends JPanel implements Runnable{
 				
 				kannUmgraben = false;
 			}
-			
 		} else {
 			kannUmgraben = true;
+		}
+		
+		if (steuerung.shop == true) {
+			if (kannEinkaufen == true) {
+				
+				int spielerSpalte = (playerx + (tileSize / 2)) / tileSize;
+				int spielerZeile = (playery + (tileSize / 2)) / tileSize;
+				
+				if (spielerSpalte == 15 && spielerZeile == 0) {
+					if (gold >= 2) {
+						gold = gold - 2;
+						samenAnzahl = samenAnzahl + 1;
+					}
+				}
+				kannEinkaufen = false;
+			}
+		} else {
+			kannEinkaufen = true;
 		}
 		
 		for (int col = 0; col < maxScreenCol; col++) {
@@ -219,6 +235,40 @@ public class Gamepanel extends JPanel implements Runnable{
 			kachelTypen[3].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
 			
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void ladeKarte() {
+		try {
+			InputStream is = getClass().getResourceAsStream("/map01.txt");
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			
+			int col = 0;
+			int row = 0;
+
+			while(col < maxScreenCol && row < maxScreenRow) {
+				
+				String zeile = br.readLine();
+				
+				while(col < maxScreenCol) {
+					String[] zahlen = zeile.split(" "); 
+					
+					int num = Integer.parseInt(zahlen[col]); 
+					
+					worldBuilding[col][row] = num; 
+					col++;
+				}
+				
+				if(col == maxScreenCol) {
+					col = 0;
+					row++;
+				}
+			}
+			br.close();
+			
+		} catch (Exception e) {
+			System.out.println("FEHLER BEIM KARTEN-LADEN!");
 			e.printStackTrace();
 		}
 	}
