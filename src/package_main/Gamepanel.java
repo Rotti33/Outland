@@ -11,26 +11,40 @@ import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-
-public class Gamepanel extends JPanel implements Runnable{
+@SuppressWarnings("serial")
+public class Gamepanel extends JPanel implements Runnable {
 	
+	// KACHEL-EINSTELLUNGEN
 	final int originalTileSize = 16;
 	final int scale = 3;
 	final int tileSize = originalTileSize * scale;
 	
-	final int maxScreenCol = 16;
-	final int maxScreenRow = 9;
-	final int screenWidth = tileSize * maxScreenCol;
-	final int screenHeight = tileSize * maxScreenRow;
+	// 1. MONITOR-GRÖSSE (Das sichtbare Fenster auf dem Desktop)
+	public final int maxScreenCol = 16;
+	public final int maxScreenRow = 9;
+	public final int screenWidth = tileSize * maxScreenCol;   // 768 Pixel
+	public final int screenHeight = tileSize * maxScreenRow;  // 432 Pixel
 	
-	int playerx = 100;
-	int playery = 100;
+	// 2. WELT-GRÖSSE (Die riesige begehbare Map im Hintergrund)
+	public final int maxWorldCol = 50;
+	public final int maxWorldRow = 50;
+	public final int worldWidth = tileSize * maxWorldCol;   // 2400 Pixel
+	public final int worldHeight = tileSize * maxWorldRow;  // 2400 Pixel
+	
+	// SPIELER-VARIABLEN (Startet genau im Zentrum der 50x50 Map)
+	int playerx = tileSize * 23;
+	int playery = tileSize * 23;
 	int figurSpeed = 4;
+	
+	// KAMERA: Pinned die Spielfigur exakt in die Bildschirm-Mitte
+	public final int screenX = (screenWidth / 2) - (tileSize / 2);
+	public final int screenY = (screenHeight / 2) - (tileSize / 2);
 	
 	String blickRichtung = "unten";	
 	
-	int[][] worldBuilding = new int[maxScreenCol][maxScreenRow];
-	int[][] wachstumsTimer = new int[maxScreenCol][maxScreenRow];
+	// WELT-GEDÄCHTNIS (Bereit für 50x50 Felder)
+	int[][] worldBuilding = new int[maxWorldCol][maxWorldRow];
+	int[][] wachstumsTimer = new int[maxWorldCol][maxWorldRow];
 	
 	BufferedImage playerImage;
 	Steuerung steuerung = new Steuerung();
@@ -60,6 +74,7 @@ public class Gamepanel extends JPanel implements Runnable{
 			e.printStackTrace(); 
 		}
 		
+		// REPARIERT: Das Fenster auf dem Desktop bleibt 768x432 Pixel groß!
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
 		this.setDoubleBuffered(true);
@@ -87,15 +102,14 @@ public class Gamepanel extends JPanel implements Runnable{
 					remainingTime = 0;
 				}
 
-			Thread.sleep((long)remainingTime);
-			nextDrawTime += drawInterval;
+				Thread.sleep((long)remainingTime);
+				nextDrawTime += drawInterval;
 			}
-		catch(InterruptedException e) {
-			e.printStackTrace();
+			catch(InterruptedException e) {
+				e.printStackTrace();
 			}
 			
 			fpsCounter++;
-			
 			timer += drawInterval;
 			
 			if(timer > 1000000000) {
@@ -119,8 +133,8 @@ public class Gamepanel extends JPanel implements Runnable{
 		if (steuerung.unten == true) {
 			playery = playery + figurSpeed;
 			blickRichtung = "unten";
-			if (playery > screenHeight - tileSize) {
-				playery = screenHeight - tileSize;
+			if (playery > worldHeight - tileSize) {
+				playery = worldHeight - tileSize;
 			}
 		}
 
@@ -135,8 +149,8 @@ public class Gamepanel extends JPanel implements Runnable{
 		if (steuerung.rechts == true) {
 			playerx = playerx + figurSpeed;
 			blickRichtung = "rechts";
-			if (playerx > screenWidth - tileSize) {
-				playerx = screenWidth - tileSize;
+			if (playerx > worldWidth - tileSize) {
+				playerx = worldWidth - tileSize;
 			}
 		}
 		
@@ -164,7 +178,7 @@ public class Gamepanel extends JPanel implements Runnable{
 					int aktuelleSpalte = zielX / tileSize;
 					int aktuelleZeile = zielY / tileSize;
 					
-					if (aktuelleSpalte >= 0 && aktuelleSpalte < maxScreenCol && aktuelleZeile >= 0 && aktuelleZeile < maxScreenRow) {		
+					if (aktuelleSpalte >= 0 && aktuelleSpalte < maxWorldCol && aktuelleZeile >= 0 && aktuelleZeile < maxWorldRow) {		
 						if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
 							worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
 						}
@@ -203,14 +217,13 @@ public class Gamepanel extends JPanel implements Runnable{
 			kannEinkaufen = true;
 		}
 		
-		for (int col = 0; col < maxScreenCol; col++) {
-			for (int row = 0; row < maxScreenRow; row++) {
+		for (int col = 0; col < maxWorldCol; col++) {
+			for (int row = 0; row < maxWorldRow; row++) {
 				
 				if (worldBuilding[col][row] == 2) {
 					
 					wachstumsTimer[col][row]++;
 					
-					// 60 Runden = 1 Sekunde. 300 Runden = 5 Sekunden!
 					if (wachstumsTimer[col][row] >= 300) {
 						worldBuilding[col][row] = 3;
 						wachstumsTimer[col][row] = 0;
@@ -247,20 +260,19 @@ public class Gamepanel extends JPanel implements Runnable{
 			int col = 0;
 			int row = 0;
 
-			while(col < maxScreenCol && row < maxScreenRow) {
+			while(col < maxWorldCol && row < maxWorldRow) {
 				
 				String zeile = br.readLine();
 				
-				while(col < maxScreenCol) {
+				while(col < maxWorldCol) {
 					String[] zahlen = zeile.split(" "); 
-					
 					int num = Integer.parseInt(zahlen[col]); 
 					
 					worldBuilding[col][row] = num; 
 					col++;
 				}
 				
-				if(col == maxScreenCol) {
+				if(col == maxWorldCol) {
 					col = 0;
 					row++;
 				}
@@ -275,57 +287,61 @@ public class Gamepanel extends JPanel implements Runnable{
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		
 		super.paintComponent(g);
-		
 		Graphics2D g2 = (Graphics2D)g;
 		
-		for (int col = 0; col < maxScreenCol; col++) {
-			for (int row = 0; row < maxScreenRow; row++) {
+		// 1. MAP MIT KAMERA-OFFSET ZEICHNEN
+		for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
+			for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
 				
-				int x = col * tileSize;
-				int y = row * tileSize;
+				int worldX = worldCol * tileSize;
+				int worldY = worldRow * tileSize;
 				
-				int kachelNummer = worldBuilding[col][row];
+				int screenXPos = worldX - playerx + screenX;
+				int screenYPos = worldY - playery + screenY;
+				
+				int kachelNummer = worldBuilding[worldCol][worldRow];
 				
 				if (kachelTypen[kachelNummer] != null && kachelTypen[kachelNummer].image != null) {
-					g2.drawImage(kachelTypen[kachelNummer].image, x, y, tileSize, tileSize, null);
+					g2.drawImage(kachelTypen[kachelNummer].image, screenXPos, screenYPos, tileSize, tileSize, null);
 				}
 				
 				if (kachelNummer == 2) {
 					g2.setColor(Color.YELLOW);
-					g2.fillOval(x + 18, y + 18, 12, 12); 
+					g2.fillOval(screenXPos + 18, screenYPos + 18, 12, 12); 
 				}
-				
 				if (kachelNummer == 3) {
 					g2.setColor(Color.GREEN);
-					g2.fillRect(x + 14, y + 10, 20, 28); 
+					g2.fillRect(screenXPos + 14, screenYPos + 10, 20, 28); 
 				}
 				
-				if (col == 15 && row == 0) {
+				if (worldCol == 15 && worldRow == 0) {
 					g2.setColor(Color.BLUE);
-					g2.fillRect(x, y, tileSize, tileSize);
-					
+					g2.fillRect(screenXPos, screenYPos, tileSize, tileSize);
 					g2.setColor(Color.WHITE);
 					g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 10));
-					g2.drawString("MARKT", x + 6, y + 26);
+					g2.drawString("MARKT", screenXPos + 6, screenYPos + 26);
 				}
 			}
 		}
 		
+		// 2. RASTER MIT KAMERA ZEICHNEN
 		g2.setColor(Color.DARK_GRAY);
-		
-		for (int x = 0; x < screenWidth; x = x + tileSize) {
-			g2.drawLine(x, 0, x, screenHeight);
+		for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
+			int worldX = worldCol * tileSize;
+			int screenXPos = worldX - playerx + screenX;
+			g2.drawLine(screenXPos, 0, screenXPos, screenHeight);
+		}
+		for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
+			int worldY = worldRow * tileSize;
+			int screenYPos = worldY - playery + screenY;
+			g2.drawLine(0, screenYPos, screenWidth, screenYPos);
 		}
 		
-		for (int y = 0; y < screenHeight; y = y + tileSize) {
-			g2.drawLine(0, y, screenWidth, y);
-		}
-		
+		// 3. SPIELER FEST IN DER MITTE ZEICHNEN
 		g2.setColor(Color.WHITE);
 		if (playerImage != null) {
-			g2.drawImage(playerImage, playerx, playery, tileSize, tileSize, null);
+			g2.drawImage(playerImage, screenX, screenY, tileSize, tileSize, null);
 		}
 		
 		int selectorX = playerx + (tileSize / 2);
@@ -347,7 +363,7 @@ public class Gamepanel extends JPanel implements Runnable{
 		int selectorCol = selectorX / tileSize;
 		int selectorRow = selectorY / tileSize;
 		
-		if (selectorCol >= 0 && selectorCol < maxScreenCol && selectorRow >= 0 && selectorRow < maxScreenRow) {
+		if (selectorCol >= 0 && selectorCol < maxWorldCol && selectorRow >= 0 && selectorRow < maxWorldRow) {
 			
 			g2.setColor(Color.CYAN);
 			g2.drawRect(selectorCol * tileSize, selectorRow * tileSize, tileSize, tileSize);
