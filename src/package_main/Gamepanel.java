@@ -14,35 +14,29 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class Gamepanel extends JPanel implements Runnable {
 	
-	// KACHEL-EINSTELLUNGEN
 	final int originalTileSize = 16;
 	final int scale = 3;
 	final int tileSize = originalTileSize * scale;
 	
-	// 1. MONITOR-GRÖSSE (Das sichtbare Fenster auf dem Desktop)
 	public final int maxScreenCol = 16;
 	public final int maxScreenRow = 9;
-	public final int screenWidth = tileSize * maxScreenCol;   // 768 Pixel
-	public final int screenHeight = tileSize * maxScreenRow;  // 432 Pixel
+	public final int screenWidth = tileSize * maxScreenCol;
+	public final int screenHeight = tileSize * maxScreenRow;
 	
-	// 2. WELT-GRÖSSE (Die riesige begehbare Map im Hintergrund)
 	public final int maxWorldCol = 50;
 	public final int maxWorldRow = 50;
-	public final int worldWidth = tileSize * maxWorldCol;   // 2400 Pixel
-	public final int worldHeight = tileSize * maxWorldRow;  // 2400 Pixel
+	public final int worldWidth = tileSize * maxWorldCol;
+	public final int worldHeight = tileSize * maxWorldRow;
 	
-	// SPIELER-VARIABLEN (Startet genau im Zentrum der 50x50 Map)
 	int playerx = tileSize * 23;
 	int playery = tileSize * 23;
 	int figurSpeed = 4;
 	
-	// KAMERA: Pinned die Spielfigur exakt in die Bildschirm-Mitte
 	public final int screenX = (screenWidth / 2) - (tileSize / 2);
 	public final int screenY = (screenHeight / 2) - (tileSize / 2);
 	
 	String blickRichtung = "unten";	
 	
-	// WELT-GEDÄCHTNIS (Bereit für 50x50 Felder)
 	int[][] worldBuilding = new int[maxWorldCol][maxWorldRow];
 	int[][] wachstumsTimer = new int[maxWorldCol][maxWorldRow];
 	
@@ -74,7 +68,6 @@ public class Gamepanel extends JPanel implements Runnable {
 			e.printStackTrace(); 
 		}
 		
-		// REPARIERT: Das Fenster auf dem Desktop bleibt 768x432 Pixel groß!
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
 		this.setDoubleBuffered(true);
@@ -344,29 +337,26 @@ public class Gamepanel extends JPanel implements Runnable {
 			g2.drawImage(playerImage, screenX, screenY, tileSize, tileSize, null);
 		}
 		
-		int selectorX = playerx + (tileSize / 2);
-		int selectorY = playery + (tileSize / 2);
+		int spielerWeltCol = (playerx + (tileSize / 2)) / tileSize;
+		int spielerWeltRow = (playery + (tileSize / 2)) / tileSize;
 		
-		if (blickRichtung.equals("oben")) {
-			selectorY = selectorY - tileSize;
-		}
-		else if (blickRichtung.equals("unten")) {
-			selectorY = selectorY + tileSize;
-		}
-		else if (blickRichtung.equals("links")) {
-			selectorX = selectorX - tileSize;
-		}
-		else if (blickRichtung.equals("rechts")) {
-			selectorX = selectorX + tileSize;
-		}
+		// Jetzt verschieben wir die Ziel-Kachel in der Welt je nach Blickrichtung
+		if (blickRichtung.equals("oben")) { spielerWeltRow--; }
+		else if (blickRichtung.equals("unten")) { spielerWeltRow++; }
+		else if (blickRichtung.equals("links")) { spielerWeltCol--; }
+		else if (blickRichtung.equals("rechts")) { spielerWeltCol++; }
 		
-		int selectorCol = selectorX / tileSize;
-		int selectorRow = selectorY / tileSize;
+		// Und JETZT rechnen wir diese Welt-Kachel pixelgenau für deinen MONITOR um!
+		int selectorScreenX = (spielerWeltCol * tileSize) - playerx + screenX;
+		int selectorScreenY = (spielerWeltRow * tileSize) - playery + screenY;
 		
-		if (selectorCol >= 0 && selectorCol < maxWorldCol && selectorRow >= 0 && selectorRow < maxWorldRow) {
-			
+		// Nur zeichnen, wenn das Ziel auf dem Bildschirm sichtbar ist
+		// (Wir rechnen die Monitor-Pixel kurz zurück in Spalten für den Check)
+		int checkCol = selectorScreenX / tileSize;
+		int checkRow = selectorScreenY / tileSize;
+		if (checkCol >= 0 && checkCol < maxScreenCol && checkRow >= 0 && checkRow < maxScreenRow) {
 			g2.setColor(Color.CYAN);
-			g2.drawRect(selectorCol * tileSize, selectorRow * tileSize, tileSize, tileSize);
+			g2.drawRect(selectorScreenX, selectorScreenY, tileSize, tileSize);
 		}
 		
 		g2.setColor(Color.YELLOW);
