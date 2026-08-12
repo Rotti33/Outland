@@ -48,26 +48,46 @@ public class Player {
 	}
 	
 	public void update() {
+		
 		if (steuerung.oben == true) {
-			worldY = worldY - figurSpeed;
 			blickRichtung = "oben";
+			int naechstesY = worldY - figurSpeed;
+			
+			if (hatKollision(worldX, naechstesY) == false) {
+				worldY = naechstesY;
+			}
 			if (worldY < 0) { worldY = 0; }
 		}
+		
 		if (steuerung.unten == true) {
-			worldY = worldY + figurSpeed;
 			blickRichtung = "unten";
+			int naechstesY = worldY + figurSpeed;
+			
+			if (hatKollision(worldX, naechstesY) == false) {
+				worldY = naechstesY;
+			}
 			if (worldY > gp.worldHeight - gp.tileSize) {
 				worldY = gp.worldHeight - gp.tileSize;
 			}
 		}
+		
 		if (steuerung.links == true) {
-			worldX = worldX - figurSpeed;
 			blickRichtung = "links";
+			int naechstesX = worldX - figurSpeed;
+			
+			if (hatKollision(naechstesX, worldY) == false) {
+				worldX = naechstesX;
+			}
 			if (worldX < 0) { worldX = 0; }
 		}
+		
 		if (steuerung.rechts == true) {
-			worldX = worldX + figurSpeed;
 			blickRichtung = "rechts";
+			int naechstesX = worldX + figurSpeed;
+			
+			if (hatKollision(naechstesX, worldY) == false) {
+				worldX = naechstesX;
+			}
 			if (worldX > gp.worldWidth - gp.tileSize) {
 				worldX = gp.worldWidth - gp.tileSize;
 			}
@@ -78,5 +98,35 @@ public class Player {
 		if (playerImage != null) {
 			g2.drawImage(playerImage, gp.screenX, gp.screenY, gp.tileSize, gp.tileSize, null);
 		}
+	}
+	
+	public boolean hatKollision(int zukuenftigesX, int zukuenftigesY) {
+		
+		int linksEcke   = zukuenftigesX;
+		int rechtsEcke  = zukuenftigesX + gp.tileSize - 1;
+		int obenEcke    = zukuenftigesY;
+		int untenEcke   = zukuenftigesY + gp.tileSize - 1;
+		
+		int colLinks   = linksEcke / gp.tileSize;
+		int colRechts  = rechtsEcke / gp.tileSize;
+		int rowOben    = obenEcke / gp.tileSize;
+		int rowUnten   = untenEcke / gp.tileSize;
+		
+		if (colLinks >= 0 && colRechts < gp.maxWorldCol && rowOben >= 0 && rowUnten < gp.maxWorldRow) {
+			
+			int kachel1 = gp.worldBuilding[colLinks][rowOben];
+			int kachel2 = gp.worldBuilding[colRechts][rowOben];
+			int kachel3 = gp.worldBuilding[colLinks][rowUnten];
+			int kachel4 = gp.worldBuilding[colRechts][rowUnten];
+			
+			if (gp.tileM.kachelTypen[kachel1].collision == true ||
+				gp.tileM.kachelTypen[kachel2].collision == true ||
+				gp.tileM.kachelTypen[kachel3].collision == true ||
+				gp.tileM.kachelTypen[kachel4].collision == true) {
+				
+				return true;
+			}
+		}
+		return false;
 	}
 }

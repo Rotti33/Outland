@@ -4,10 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
@@ -35,9 +31,9 @@ public class Gamepanel extends JPanel implements Runnable {
 	
 	Steuerung steuerung = new Steuerung();
 	Thread gameThread;
-	
-	Player spieler = new Player(this, steuerung);
+
 	TileManager tileM = new TileManager(this);
+	Player spieler = new Player(this, steuerung);
 	
 	int fps = 0;
 	int fpsCounter = 0;

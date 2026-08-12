@@ -12,7 +12,6 @@ public class TileManager {
 
 	Gamepanel gp;
 	public Tile[] kachelTypen;
-
 	public int[][] worldBuilding;
 
 	public TileManager(Gamepanel gp) {
@@ -38,6 +37,13 @@ public class TileManager {
 			
 			kachelTypen[3] = new Tile();
 			kachelTypen[3].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
+			
+			// KACHEL 4: STEIN
+			kachelTypen[4] = new Tile();
+			kachelTypen[4].image = ImageIO.read(getClass().getResourceAsStream("/stein.Test.png"));
+			
+			// REPARIERT: Jetzt weiß Java offiziell, dass dieser Block solide ist!
+			kachelTypen[4].collision = true;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
