@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,21 +27,17 @@ public class Gamepanel extends JPanel implements Runnable {
 	public final int worldWidth = tileSize * maxWorldCol;
 	public final int worldHeight = tileSize * maxWorldRow;
 	
-	int playerx = tileSize * 23;
-	int playery = tileSize * 23;
-	int figurSpeed = 4;
-	
 	public final int screenX = (screenWidth / 2) - (tileSize / 2);
 	public final int screenY = (screenHeight / 2) - (tileSize / 2);
-	
-	String blickRichtung = "unten";	
 	
 	int[][] worldBuilding = new int[maxWorldCol][maxWorldRow];
 	int[][] wachstumsTimer = new int[maxWorldCol][maxWorldRow];
 	
-	BufferedImage playerImage;
 	Steuerung steuerung = new Steuerung();
 	Thread gameThread;
+	
+	Player spieler = new Player(this, steuerung);
+	TileManager tileM = new TileManager(this);
 	
 	int fps = 0;
 	int fpsCounter = 0;
@@ -51,22 +46,7 @@ public class Gamepanel extends JPanel implements Runnable {
 	boolean kannUmgraben = true;
 	boolean kannEinkaufen = true;
 	
-	Tile[] kachelTypen = new Tile[10];
-	
-	int samenAnzahl = 5;
-	int tomaten = 0;
-	int gold = 0;
-	
 	public Gamepanel() {
-		
-		ladeKachelBilder();
-		ladeKarte();
-		
-		try {
-			playerImage = ImageIO.read(getClass().getResourceAsStream("/player.png"));
-		} catch (Exception e) {
-			e.printStackTrace(); 
-		}
 		
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.BLACK);
@@ -115,58 +95,28 @@ public class Gamepanel extends JPanel implements Runnable {
 	
 	public void update() {
 		
-		if (steuerung.oben == true) {
-			playery = playery - figurSpeed;
-			blickRichtung = "oben";
-			if (playery < 0) {
-				playery = 0;
-			}
-		}
-		
-		if (steuerung.unten == true) {
-			playery = playery + figurSpeed;
-			blickRichtung = "unten";
-			if (playery > worldHeight - tileSize) {
-				playery = worldHeight - tileSize;
-			}
-		}
-
-		if (steuerung.links == true) {
-			playerx = playerx - figurSpeed;
-			blickRichtung = "links";
-			if (playerx < 0) {
-				playerx = 0;
-			}
-		}
-		
-		if (steuerung.rechts == true) {
-			playerx = playerx + figurSpeed;
-			blickRichtung = "rechts";
-			if (playerx > worldWidth - tileSize) {
-				playerx = worldWidth - tileSize;
-			}
-		}
+		spieler.update();
 		
 		if (steuerung.interaktion == true) {			
 			if (kannUmgraben == true) {
 				
-				int spielerSpalte = (playerx + (tileSize / 2)) / tileSize;
-				int spielerZeile = (playery + (tileSize / 2)) / tileSize;
+				int spielerSpalte = (spieler.worldX + (tileSize / 2)) / tileSize;
+				int spielerZeile = (spieler.worldY + (tileSize / 2)) / tileSize;
 				
 				if (spielerSpalte == 15 && spielerZeile == 0) {
-					if (tomaten > 0) {
-						gold = gold + (tomaten * 10);
-						tomaten = 0;
+					if (spieler.tomaten > 0) {
+						spieler.gold = spieler.gold + (spieler.tomaten * 10);
+						spieler.tomaten = 0;
 					}
 				} 
 				else {
-					int zielX = playerx + (tileSize / 2);
-					int zielY = playery + (tileSize / 2);
+					int zielX = spieler.worldX + (tileSize / 2);
+					int zielY = spieler.worldY + (tileSize / 2);
 					
-					if(blickRichtung.equals("oben")) { zielY = zielY - tileSize; }
-					else if(blickRichtung.equals("unten")) { zielY = zielY + tileSize; }
-					else if(blickRichtung.equals("links")) { zielX = zielX - tileSize; }
-					else if(blickRichtung.equals("rechts")) { zielX = zielX + tileSize; }
+					if(spieler.blickRichtung.equals("oben")) { zielY = zielY - tileSize; }
+					else if(spieler.blickRichtung.equals("unten")) { zielY = zielY + tileSize; }
+					else if(spieler.blickRichtung.equals("links")) { zielX = zielX - tileSize; }
+					else if(spieler.blickRichtung.equals("rechts")) { zielX = zielX + tileSize; }
 					
 					int aktuelleSpalte = zielX / tileSize;
 					int aktuelleZeile = zielY / tileSize;
@@ -175,17 +125,16 @@ public class Gamepanel extends JPanel implements Runnable {
 						if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 0) {
 							worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
 						}
-						else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 1 && samenAnzahl > 0) {
+						else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 1 && spieler.samenAnzahl > 0) {
 							worldBuilding[aktuelleSpalte][aktuelleZeile] = 2;
-							samenAnzahl = samenAnzahl - 1;
+							spieler.samenAnzahl = spieler.samenAnzahl - 1;
 						}
 						else if (worldBuilding[aktuelleSpalte][aktuelleZeile] == 3) {
 							worldBuilding[aktuelleSpalte][aktuelleZeile] = 1;
-							tomaten = tomaten + 1;
+							spieler.tomaten = spieler.tomaten + 1;
 						}
 					}
 				}
-				
 				kannUmgraben = false;
 			}
 		} else {
@@ -195,13 +144,13 @@ public class Gamepanel extends JPanel implements Runnable {
 		if (steuerung.shop == true) {
 			if (kannEinkaufen == true) {
 				
-				int spielerSpalte = (playerx + (tileSize / 2)) / tileSize;
-				int spielerZeile = (playery + (tileSize / 2)) / tileSize;
+				int spielerSpalte = (spieler.worldX + (tileSize / 2)) / tileSize;
+				int spielerZeile = (spieler.worldY + (tileSize / 2)) / tileSize;
 				
 				if (spielerSpalte == 15 && spielerZeile == 0) {
-					if (gold >= 2) {
-						gold = gold - 2;
-						samenAnzahl = samenAnzahl + 1;
+					if (spieler.gold >= 2) {
+						spieler.gold = spieler.gold - 2;
+						spieler.samenAnzahl = spieler.samenAnzahl + 1;
 					}
 				}
 				kannEinkaufen = false;
@@ -212,11 +161,8 @@ public class Gamepanel extends JPanel implements Runnable {
 		
 		for (int col = 0; col < maxWorldCol; col++) {
 			for (int row = 0; row < maxWorldRow; row++) {
-				
 				if (worldBuilding[col][row] == 2) {
-					
 					wachstumsTimer[col][row]++;
-					
 					if (wachstumsTimer[col][row] >= 300) {
 						worldBuilding[col][row] = 3;
 						wachstumsTimer[col][row] = 0;
@@ -226,132 +172,42 @@ public class Gamepanel extends JPanel implements Runnable {
 		}
 	}
 	
-	public void ladeKachelBilder() {
-		try {
-			kachelTypen[0] = new Tile();
-			kachelTypen[0].image = ImageIO.read(getClass().getResourceAsStream("/gras.Test.png"));
-			
-			kachelTypen[1] = new Tile();
-			kachelTypen[1].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
-			
-			kachelTypen[2] = new Tile();
-			kachelTypen[2].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
-			
-			kachelTypen[3] = new Tile();
-			kachelTypen[3].image = ImageIO.read(getClass().getResourceAsStream("/erde.Test.png"));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void ladeKarte() {
-		try {
-			InputStream is = getClass().getResourceAsStream("/map01.txt");
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			
-			int col = 0;
-			int row = 0;
-
-			while(col < maxWorldCol && row < maxWorldRow) {
-				
-				String zeile = br.readLine();
-				
-				while(col < maxWorldCol) {
-					String[] zahlen = zeile.split(" "); 
-					int num = Integer.parseInt(zahlen[col]); 
-					
-					worldBuilding[col][row] = num; 
-					col++;
-				}
-				
-				if(col == maxWorldCol) {
-					col = 0;
-					row++;
-				}
-			}
-			br.close();
-			
-		} catch (Exception e) {
-			System.out.println("FEHLER BEIM KARTEN-LADEN!");
-			e.printStackTrace();
-		}
-	}
-	
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D)g;
 		
-		// 1. MAP MIT KAMERA-OFFSET ZEICHNEN
-		for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
-			for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
-				
-				int worldX = worldCol * tileSize;
-				int worldY = worldRow * tileSize;
-				
-				int screenXPos = worldX - playerx + screenX;
-				int screenYPos = worldY - playery + screenY;
-				
-				int kachelNummer = worldBuilding[worldCol][worldRow];
-				
-				if (kachelTypen[kachelNummer] != null && kachelTypen[kachelNummer].image != null) {
-					g2.drawImage(kachelTypen[kachelNummer].image, screenXPos, screenYPos, tileSize, tileSize, null);
-				}
-				
-				if (kachelNummer == 2) {
-					g2.setColor(Color.YELLOW);
-					g2.fillOval(screenXPos + 18, screenYPos + 18, 12, 12); 
-				}
-				if (kachelNummer == 3) {
-					g2.setColor(Color.GREEN);
-					g2.fillRect(screenXPos + 14, screenYPos + 10, 20, 28); 
-				}
-				
-				if (worldCol == 15 && worldRow == 0) {
-					g2.setColor(Color.BLUE);
-					g2.fillRect(screenXPos, screenYPos, tileSize, tileSize);
-					g2.setColor(Color.WHITE);
-					g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 10));
-					g2.drawString("MARKT", screenXPos + 6, screenYPos + 26);
-				}
-			}
-		}
+		// 1. REPARIERT: Der Map-Chef übernimmt ab jetzt das komplette Zeichnen der Welt!
+		tileM.draw(g2);
 		
 		// 2. RASTER MIT KAMERA ZEICHNEN
 		g2.setColor(Color.DARK_GRAY);
 		for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
 			int worldX = worldCol * tileSize;
-			int screenXPos = worldX - playerx + screenX;
+			int screenXPos = worldX - spieler.worldX + screenX;
 			g2.drawLine(screenXPos, 0, screenXPos, screenHeight);
 		}
 		for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
 			int worldY = worldRow * tileSize;
-			int screenYPos = worldY - playery + screenY;
+			int screenYPos = worldY - spieler.worldY + screenY;
 			g2.drawLine(0, screenYPos, screenWidth, screenYPos);
 		}
 		
-		// 3. SPIELER FEST IN DER MITTE ZEICHNEN
-		g2.setColor(Color.WHITE);
-		if (playerImage != null) {
-			g2.drawImage(playerImage, screenX, screenY, tileSize, tileSize, null);
-		}
+		// 3. SPIELER ZEICHNET SICH SELBST
+		spieler.draw(g2);
 		
-		int spielerWeltCol = (playerx + (tileSize / 2)) / tileSize;
-		int spielerWeltRow = (playery + (tileSize / 2)) / tileSize;
+		// 4. SQUIGGLY-SELECTOR MIT KAMERA BERECHNEN
+		int spielerWeltCol = (spieler.worldX + (tileSize / 2)) / tileSize;
+		int spielerWeltRow = (spieler.worldY + (tileSize / 2)) / tileSize;
 		
-		// Jetzt verschieben wir die Ziel-Kachel in der Welt je nach Blickrichtung
-		if (blickRichtung.equals("oben")) { spielerWeltRow--; }
-		else if (blickRichtung.equals("unten")) { spielerWeltRow++; }
-		else if (blickRichtung.equals("links")) { spielerWeltCol--; }
-		else if (blickRichtung.equals("rechts")) { spielerWeltCol++; }
+		if (spieler.blickRichtung.equals("oben")) { spielerWeltRow--; }
+		else if (spieler.blickRichtung.equals("unten")) { spielerWeltRow++; }
+		else if (spieler.blickRichtung.equals("links")) { spielerWeltCol--; }
+		else if (spieler.blickRichtung.equals("rechts")) { spielerWeltCol++; }
 		
-		// Und JETZT rechnen wir diese Welt-Kachel pixelgenau für deinen MONITOR um!
-		int selectorScreenX = (spielerWeltCol * tileSize) - playerx + screenX;
-		int selectorScreenY = (spielerWeltRow * tileSize) - playery + screenY;
+		int selectorScreenX = (spielerWeltCol * tileSize) - spieler.worldX + screenX;
+		int selectorScreenY = (spielerWeltRow * tileSize) - spieler.worldY + screenY;
 		
-		// Nur zeichnen, wenn das Ziel auf dem Bildschirm sichtbar ist
-		// (Wir rechnen die Monitor-Pixel kurz zurück in Spalten für den Check)
 		int checkCol = selectorScreenX / tileSize;
 		int checkRow = selectorScreenY / tileSize;
 		if (checkCol >= 0 && checkCol < maxScreenCol && checkRow >= 0 && checkRow < maxScreenRow) {
@@ -359,21 +215,18 @@ public class Gamepanel extends JPanel implements Runnable {
 			g2.drawRect(selectorScreenX, selectorScreenY, tileSize, tileSize);
 		}
 		
+		// 5. INVENTAR-TEXTE (Bleiben starr auf dem Monitor)
 		g2.setColor(Color.YELLOW);
 		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
 		g2.drawString("FPS: " + fps, 700, 20);
 		
 		g2.setColor(Color.ORANGE);
 		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-		g2.drawString("Samen im Rucksack: " + samenAnzahl, 20, 410);
-		
+		g2.drawString("Samen im Rucksack: " + spieler.samenAnzahl, 20, 410);
 		g2.setColor(Color.RED);
-		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-		g2.drawString("Geerntete Tomaten: " + tomaten, 20, 385);
-		
+		g2.drawString("Geerntete Tomaten: " + spieler.tomaten, 20, 385);
 		g2.setColor(Color.YELLOW);
-		g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-		g2.drawString("Gold: " + gold + "g", 20, 360);
+		g2.drawString("Gold: " + spieler.gold + "g", 20, 360);
 		
 		g2.dispose();
 	}
