@@ -21,6 +21,7 @@ public class Steuerung implements KeyListener {
 		if (code == KeyEvent.VK_D) {rechts = true;}
 		if (code == KeyEvent.VK_E) {interaktion = true;}
 		if (code == KeyEvent.VK_Q) {shop = true;}
+		if (code == KeyEvent.VK_ESCAPE) {System.exit(0);}
 	}
 	
 	@Override

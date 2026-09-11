@@ -173,6 +173,16 @@ public class Gamepanel extends JPanel implements Runnable {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D)g;
 		
+		double fensterBreite = getWidth();
+		double fensterHoehe = getHeight();
+		
+		// 2. Wir berechnen den Skalierungsfaktor (Wie oft passt unsere kleine Welt in den echten Monitor?)
+		double scaleX = fensterBreite / screenWidth;
+		double scaleY = fensterHoehe / screenHeight;
+		
+		// 3. Wir aktivieren die Lupe! Ab hier wird ALLES vollautomatisch hochgerechnet.
+		g2.scale(scaleX, scaleY);
+		
 		// 1. REPARIERT: Der Map-Chef übernimmt ab jetzt das komplette Zeichnen der Welt!
 		tileM.draw(g2);
 		
